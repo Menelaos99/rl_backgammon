@@ -24,10 +24,11 @@ class isosceles():
 
             for x in range(width):
                 for y in reversed(range(height)):
+                    if np.array_equal(self.grid[y, x], [180, 133, 89]):
+                        self.grid[y:y+2, x] = [0, 0, 0]
+                        start_color=True
                     if start_color:
                         self.grid[y, x]= [180, 133, 89]
-                    if np.array_equal(self.grid[y, x], [180, 133, 89]):
-                        start_color=True
                     if y == 0:
                         start_color=False
         else:
@@ -38,10 +39,12 @@ class isosceles():
         
             for x in range(width):
                 for y in range(height):
+                    if np.array_equal(self.grid[y, x], [180, 133, 89]):
+                        self.grid[y-2:y, x] = [0, 0, 0]
+                        # self.grid[y-2, x] = [0, 0, 0]
+                        start_color=True
                     if start_color:
                         self.grid[y, x]= [180, 133, 89]
-                    if np.array_equal(self.grid[y, x], [180, 133, 89]):
-                        start_color=True
                     if y == self.grid.shape[0]-1:
                         start_color=False
 
@@ -95,6 +98,7 @@ class Board():
             wood_set:int=24
         ):
         self.pouli_radius = 20
+        self.p_diameter = self.pouli_radius*2
 
         self.triangle = isosceles(
             height=pouli_radius*2*5,
@@ -112,11 +116,11 @@ class Board():
         
         self.black_offset = wood_set-4
         self.wood_set = wood_set
-        self.board = self._create_board()
+        self.board_grid = self._create_board()
         
-        self.pouli_p1 = Pouli(radius=pouli_radius, color=[255, 0, 0])
-        self.pouli_p2 = Pouli(radius=pouli_radius, color=[0, 0, 255])
-        self._place_poulia()
+        # self.pouli_p1 = Pouli(radius=pouli_radius, color=[255, 0, 0])
+        # self.pouli_p2 = Pouli(radius=pouli_radius, color=[0, 0, 255])
+        # self._place_poulia()
 
     def _create_board(
             self,
@@ -131,9 +135,50 @@ class Board():
         board[rr, cc] = [161, 102, 47]
 
         for hor in range(6):
-            for col in range(self.wood_set, self.wood_set+self.pouli_radius*2):
-                for row in range(self.wood_set, self.wood_set + self.pouli_radius*5*2):
-                    board[row, col] = self.triangle.grid[row-self.wood_set, col-self.wood_set]
+            offset = hor*self.p_diameter
+            #top left
+            for col in range(
+                self.wood_set + offset,
+                self.wood_set+self.p_diameter + offset
+                ):
+                for row in range(
+                    self.wood_set, 
+                    self.wood_set + self.p_diameter*5
+                ):
+                    board[row, col] = self.triangle.grid[row-self.wood_set, col-(self.wood_set+offset)]
+            
+            #top right
+            for col in reversed(range(
+                self.width-(self.wood_set + self.p_diameter + self.p_diameter*hor),
+                self.width - (self.wood_set + (self.p_diameter*hor))
+            )):
+                for row in range(
+                    self.wood_set,
+                    self.wood_set + self.p_diameter*5
+                ):
+                    board[row, col] = self.triangle.grid[row-self.wood_set, col-(self.width - (self.wood_set + (self.p_diameter*hor)))]
+            
+            #bottom left
+            for col in range(
+                self.wood_set + (self.p_diameter*hor),
+                self.wood_set + self.p_diameter + (self.p_diameter*hor)
+                ):
+                for row in reversed(range(
+                    self.height-(self.wood_set+self.p_diameter*5),
+                    self.height-(self.wood_set)
+                )):
+                    board[row, col] = self.reversed_triangle.grid[row-(self.height-(self.wood_set)), col-(self.wood_set+(self.p_diameter*hor))]
+
+            #bottom right
+            for row in reversed(range(
+                self.height-(self.wood_set+self.p_diameter*5),
+                self.height-(self.wood_set)
+                )):
+                for col in reversed(range(
+                    self.width-(self.wood_set+self.p_diameter+(self.p_diameter*hor)),
+                    self.width - (self.wood_set + (self.p_diameter*hor))
+                    )):
+                    board[row, col] = self.reversed_triangle.grid[row-(self.height-(self.wood_set)), col-(self.width - (self.wood_set + (self.p_diameter*hor)))]
         plt.imshow(board)
         plt.show()
         # xs = np.arange(0, window_size)
@@ -165,17 +210,19 @@ class Board():
         num_lanes = 6
         diameter = self.pouli_p1.radius*2
         for hor in range(num_lanes):
-            # top left
+            h_offset = diameter*hor 
             for vert in range(0, num_poulia_up_right):
+                v_offset = diameter*vert
+                # top left
                 for row in range(
-                    self.wood_set+(diameter*vert),
-                    self.wood_set+diameter+(diameter*vert)
+                    self.wood_set+v_offset,
+                    self.wood_set+diameter+v_offset
                     ):
                     for col in range(
-                        self.wood_set + (diameter*hor),
-                        self.wood_set+diameter+(diameter*hor)
+                        self.wood_set + h_offset,
+                        self.wood_set+diameter+h_offset
                         ):
-                        self.board[row, col] = self.pouli_p1.grid[row-(self.wood_set+(diameter*vert)), col-(self.wood_set+(diameter*hor))]
+                        self.board[row, col] = self.pouli_p1.grid[row-(self.wood_set+v_offset), col-(self.wood_set+h_offset)]
 
                 #bottom left
                 for row in reversed(range(
@@ -219,32 +266,32 @@ class Board():
 
 #Test
 def test():
-    # pouli_radius = 20
+    pouli_radius = 20
     # isosceles(
     #     height=pouli_radius*2*5,
     #     width=pouli_radius*2,
     #     reverse=True
     # )
-    # Board(pouli_radius=pouli_radius)
+    Board(pouli_radius=pouli_radius)
     # pouli(20)
-    x = np.array([[[1, 1, 1],
-               [255, 255, 255]],
-              [[  1, 255, 255],
-               [255, 255, 255]],
-              [[255, 255, 255],
-               [255,   6, 255]]], dtype=np.uint8)
-    print(x.shape)
-    mask = np.all(x == 255, axis=2, keepdims=True)
-    print(mask.shape)
+    # x = np.array([[[1, 1, 1],
+    #            [255, 255, 255]],
+    #           [[  1, 255, 255],
+    #            [255, 255, 255]],
+    #           [[255, 255, 255],
+    #            [255,   6, 255]]], dtype=np.uint8)
+    # print(x.shape)
+    # mask = np.all(x == 255, axis=2, keepdims=True)
+    # print(mask.shape)
 
-    # broadcast the mask against the array to make the dimensions the same
-    x, mask = np.broadcast_arrays(x, mask)
+    # # broadcast the mask against the array to make the dimensions the same
+    # x, mask = np.broadcast_arrays(x, mask)
 
-    # construct a masked array
-    mx = np.ma.masked_array(x, mask)
+    # # construct a masked array
+    # mx = np.ma.masked_array(x, mask)
 
-    plt.imshow(mx)
-    plt.show()
+    # plt.imshow(mx)
+    # plt.show()
 
 if __name__ == "__main__":
     test()
