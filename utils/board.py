@@ -3,90 +3,10 @@ import matplotlib.pyplot as plt
 import scipy.stats as stats
 from skimage import draw
 
+from utils.pouli import Pouli
+from utils.isosceles import isosceles
+
 #TODO: add identifies sta poulia (is it a good idea?)
-
-class isosceles():
-    def __init__(
-            self,
-            width: int,
-            height: int,
-            reverse: bool
-        ):
-        
-        self.grid = np.zeros((height, width, 3), dtype=np.uint8)
-        self.grid[:, :] = [161, 102, 47]
-        start_color=False
-        if reverse:
-            rr, cc = draw.line(0, 0, height-1, int(width/2))
-            self.grid[rr, cc] = [180, 133, 89]
-            rr, cc = draw.line(0, width-1, height-1, int(width/2))
-            self.grid[rr, cc] = [180, 133, 89]
-
-            for x in range(width):
-                for y in reversed(range(height)):
-                    if np.array_equal(self.grid[y, x], [180, 133, 89]):
-                        self.grid[y:y+2, x] = [0, 0, 0]
-                        start_color=True
-                    if start_color:
-                        self.grid[y, x]= [180, 133, 89]
-                    if y == 0:
-                        start_color=False
-        else:
-            rr, cc = draw.line(height-1, 0, 0, int(width/2))
-            self.grid[rr, cc] = [180, 133, 89]
-            rr, cc = draw.line(height-1, width-1, 0, int(width/2))
-            self.grid[rr, cc] = [180, 133, 89]
-        
-            for x in range(width):
-                for y in range(height):
-                    if np.array_equal(self.grid[y, x], [180, 133, 89]):
-                        self.grid[y-2:y, x] = [0, 0, 0]
-                        # self.grid[y-2, x] = [0, 0, 0]
-                        start_color=True
-                    if start_color:
-                        self.grid[y, x]= [180, 133, 89]
-                    if y == self.grid.shape[0]-1:
-                        start_color=False
-
-        # plt.imshow(self.grid)
-        # plt.show()
-        # print(self.grid)
-
-class Pouli():
-    def __init__(
-            self,
-            radius: int=20,
-            color: np.array=[255, 0, 0]
-        ):
-        self.radius = radius
-        self.color = color
-        self.grid=self._create()
-        
-    def _create(self):
-        inner_radius = int(self.radius/2)
-        
-        temp = np.ones((int(self.radius*2), int(self.radius*2), 3))
-        # temp[:, :] = [161, 102, 47]
-        temp[:, :] = [161, 102, 47] 
-        
-        center = (int(temp.shape[0]/2), int(temp.shape[1]/2))
-        
-        rr, cc = draw.disk(center, self.radius, shape=temp.shape)
-        temp[rr, cc] = [0, 0, 0] 
-
-        rr, cc = draw.disk(center, self.radius-2, shape=temp.shape)
-        temp[rr, cc] = self.color
-
-        rr, cc = draw.disk(center, inner_radius, shape=temp.shape)
-        temp[rr, cc] = [0, 0, 0] 
-
-        rr, cc = draw.disk(center, inner_radius-2, shape=temp.shape)
-        temp[rr, cc] = self.color 
-
-        # plt.imshow(temp)
-        # plt.show()
-        return temp
-
 class Diamond():
     def __init__(self):
         pass
