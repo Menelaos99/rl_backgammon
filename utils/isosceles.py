@@ -9,7 +9,6 @@ class isosceles():
             height: int,
             reverse: bool
         ):
-        
         self.grid = np.zeros((height, width, 3), dtype=np.uint8)
         self.grid[:, :] = DARK_WOOD
         start_color=False
@@ -22,7 +21,7 @@ class isosceles():
             for x in range(width):
                 for y in reversed(range(height)):
                     if np.array_equal(self.grid[y, x], LIGHT_WOOD):
-                        self.grid[y:y+2, x] = BLACK
+                        self.grid[y:y+2, x] = OUTLINE_COLOR
                         start_color=True
                     if start_color:
                         self.grid[y, x]= LIGHT_WOOD
@@ -37,7 +36,7 @@ class isosceles():
             for x in range(width):
                 for y in range(height):
                     if np.array_equal(self.grid[y, x], LIGHT_WOOD):
-                        self.grid[y-2:y, x] = BLACK
+                        self.grid[y-2:y, x] = OUTLINE_COLOR
                         # self.grid[y-2, x] = [0, 0, 0]
                         start_color=True
                     if start_color:
