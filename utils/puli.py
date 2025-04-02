@@ -1,27 +1,50 @@
 import numpy as np
 import pygame
-from constants import *
+from .constants import *
 from skimage import draw
+from pygame.math import Vector2
 
 class Puli():
     def __init__(
             self,
-            win: pygame.surface.Surface=None,
-            radius: int=20,
-            color: np.array=[255, 0, 0]
+            color: np.array=[255, 0, 0],
+            lane: int=0,
+            vpos: int=0
         ):
-        self.win = win
-        self.radius = radius
-        self.color = color             
+        self.color = color  
+        self.lane = lane
+        self.vpos = vpos           
+        self.center = (0, 0)
         # self.draw(win)
         # self.grid=self._create()
     
-    def draw(self, center):
-        pygame.draw.circle(self.win, OUTLINE_COLOR, center, self.radius)
-        pygame.draw.circle(self.win, self.color, center, self.radius-3)
-        pygame.draw.circle(self.win, OUTLINE_COLOR, center, int(self.radius/2))
-        pygame.draw.circle(self.win, self.color, center, int(self.radius/2)-3)
+    def _calc_coor(self, lane, vpos):
+        if lane >18:
+            lane_tmp = lane-19
+            lane_range = list(reversed(np.arange(0, 6).tolist()))
+            center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*lane_range[lane_tmp] + PULI_RADIUS), DEAD_AREA + PULI_DIAMETER*(vpos-1) + PULI_RADIUS))
+        elif lane>12:
+            lane_tmp = lane-13
+            lane_range = list(reversed(np.arange(0, 6).tolist()))
+            center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*(lane_range[lane_tmp]+7) + PULI_RADIUS), DEAD_AREA + PULI_DIAMETER*(vpos-1) + PULI_RADIUS))
+        elif lane>6:
+            center = Vector2(((ACTIVE_WIDTH - (PULI_DIAMETER*(lane) + PULI_RADIUS), HEIGHT - (DEAD_AREA + PULI_RADIUS + PULI_DIAMETER*(vpos-1) + 1))))
+        else: 
+            center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*(lane-1) + PULI_RADIUS), HEIGHT - (DEAD_AREA + PULI_RADIUS + PULI_DIAMETER*(vpos-1) + 1)))
+        self.center = center
 
+
+    def draw(self, win):
+        self._calc_coor()
+        pygame.draw.circle(win, OUTLINE_COLOR, self.center, PULI_RADIUS)
+        pygame.draw.circle(win, self.color, self.center, PULI_RADIUS-3)
+        pygame.draw.circle(win, OUTLINE_COLOR, self.center, int(PULI_RADIUS/2))
+        pygame.draw.circle(win, self.color, self.center, int(PULI_RADIUS/2)-3)
+
+    def move(self, lane, vpos):
+        self.lane=lane
+        self.vpos=vpos
+        self._calc_coor()
 # if __name__=="__main__":
 #     test_comps()    
 
