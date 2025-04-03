@@ -154,7 +154,7 @@ class Board():
             for vpos in range(1, VPOS+1):
                 puli = self.board_storage[lane][vpos]
                 if puli:
-                    puli.draw(win, lane, vpos)
+                    puli.draw(win)
 
     def get_piece(self, lane, vpos):
         return self.board_storage[lane][vpos]

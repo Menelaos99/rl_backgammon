@@ -18,19 +18,19 @@ class Puli():
         # self.draw(win)
         # self.grid=self._create()
     
-    def _calc_coor(self, lane, vpos):
-        if lane >18:
-            lane_tmp = lane-19
+    def _calc_coor(self):
+        if self.lane >18:
+            lane_tmp = self.lane-19
             lane_range = list(reversed(np.arange(0, 6).tolist()))
-            center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*lane_range[lane_tmp] + PULI_RADIUS), DEAD_AREA + PULI_DIAMETER*(vpos-1) + PULI_RADIUS))
-        elif lane>12:
-            lane_tmp = lane-13
+            center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*lane_range[lane_tmp] + PULI_RADIUS), DEAD_AREA + PULI_DIAMETER*(self.vpos-1) + PULI_RADIUS))
+        elif self.lane>12:
+            lane_tmp = self.lane-13
             lane_range = list(reversed(np.arange(0, 6).tolist()))
-            center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*(lane_range[lane_tmp]+7) + PULI_RADIUS), DEAD_AREA + PULI_DIAMETER*(vpos-1) + PULI_RADIUS))
-        elif lane>6:
-            center = Vector2(((ACTIVE_WIDTH - (PULI_DIAMETER*(lane) + PULI_RADIUS), HEIGHT - (DEAD_AREA + PULI_RADIUS + PULI_DIAMETER*(vpos-1) + 1))))
+            center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*(lane_range[lane_tmp]+7) + PULI_RADIUS), DEAD_AREA + PULI_DIAMETER*(self.vpos-1) + PULI_RADIUS))
+        elif self.lane>6:
+            center = Vector2(((ACTIVE_WIDTH - (PULI_DIAMETER*(self.lane) + PULI_RADIUS), HEIGHT - (DEAD_AREA + PULI_RADIUS + PULI_DIAMETER*(self.vpos-1) + 1))))
         else: 
-            center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*(lane-1) + PULI_RADIUS), HEIGHT - (DEAD_AREA + PULI_RADIUS + PULI_DIAMETER*(vpos-1) + 1)))
+            center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*(self.lane-1) + PULI_RADIUS), HEIGHT - (DEAD_AREA + PULI_RADIUS + PULI_DIAMETER*(self.vpos-1) + 1)))
         self.center = center
 
 
