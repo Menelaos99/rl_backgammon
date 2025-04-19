@@ -1,7 +1,6 @@
 import numpy as np
 import pygame
 from .constants import *
-from skimage import draw
 from pygame.math import Vector2
 
 class Puli():
@@ -17,34 +16,43 @@ class Puli():
         self.center = (0, 0)
         # self.draw(win)
         # self.grid=self._create()
-    
-    def _calc_coor(self):
-        if self.lane >18:
-            lane_tmp = self.lane-19
-            lane_range = list(reversed(np.arange(0, 6).tolist()))
-            center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*lane_range[lane_tmp] + PULI_RADIUS), DEAD_AREA + PULI_DIAMETER*(self.vpos-1) + PULI_RADIUS))
-        elif self.lane>12:
-            lane_tmp = self.lane-13
-            lane_range = list(reversed(np.arange(0, 6).tolist()))
-            center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*(lane_range[lane_tmp]+7) + PULI_RADIUS), DEAD_AREA + PULI_DIAMETER*(self.vpos-1) + PULI_RADIUS))
-        elif self.lane>6:
-            center = Vector2(((ACTIVE_WIDTH - (PULI_DIAMETER*(self.lane) + PULI_RADIUS), HEIGHT - (DEAD_AREA + PULI_RADIUS + PULI_DIAMETER*(self.vpos-1) + 1))))
-        else: 
-            center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*(self.lane-1) + PULI_RADIUS), HEIGHT - (DEAD_AREA + PULI_RADIUS + PULI_DIAMETER*(self.vpos-1) + 1)))
-        self.center = center
 
-
-    def draw(self, win):
-        self._calc_coor()
+    def draw(self, win, counts):
+        self.center = calc_coor(lane=self.lane, vpos=self.vpos)
         pygame.draw.circle(win, OUTLINE_COLOR, self.center, PULI_RADIUS)
         pygame.draw.circle(win, self.color, self.center, PULI_RADIUS-3)
         pygame.draw.circle(win, OUTLINE_COLOR, self.center, int(PULI_RADIUS/2))
         pygame.draw.circle(win, self.color, self.center, int(PULI_RADIUS/2)-3)
+        if self.lane > 26:
+            font = pygame.font.SysFont('arial', size=10)
+            text = font.render(f'x{counts}', True, [0, 255, 0])
+            win.blit(text, self.center)
 
     def move(self, lane, vpos):
         self.lane=lane
         self.vpos=vpos
-        self._calc_coor()
-# if __name__=="__main__":
-#     test_comps()    
+        self.center  = calc_coor(self.lane, self.vpos)
 
+def calc_coor(lane, vpos):
+    if lane == 27:
+            center = Vector2((DEAD_AREA + 6*PULI_DIAMETER + PULI_RADIUS, ACTIVE_HEIGHT - (5*PULI_DIAMETER + PULI_RADIUS)))
+    elif lane == 28:
+            center = Vector2((DEAD_AREA + 6*PULI_DIAMETER + PULI_RADIUS, DEAD_AREA + 5*PULI_DIAMETER + PULI_RADIUS))
+    elif lane == 26:
+        center = Vector2((DEAD_AREA + 6*PULI_DIAMETER + PULI_RADIUS, DEAD_AREA + (vpos-1)*PULI_DIAMETER + PULI_RADIUS))
+    elif lane == 25: 
+        center = Vector2((DEAD_AREA + 6*PULI_DIAMETER + PULI_RADIUS, ACTIVE_HEIGHT - ((vpos-1)*PULI_DIAMETER + PULI_RADIUS)))
+    elif lane >18:
+        lane_tmp = lane-19
+        lane_range = list(reversed(np.arange(0, 6).tolist()))
+        center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*lane_range[lane_tmp] + PULI_RADIUS), DEAD_AREA + PULI_DIAMETER*(vpos-1) + PULI_RADIUS))
+    elif lane>12:
+        lane_tmp = lane-13
+        lane_range = list(reversed(np.arange(0, 6).tolist()))
+        center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*(lane_range[lane_tmp]+7) + PULI_RADIUS), DEAD_AREA + PULI_DIAMETER*(vpos-1) + PULI_RADIUS))
+    elif lane>6:
+        center = Vector2(((ACTIVE_WIDTH - (PULI_DIAMETER*(lane) + PULI_RADIUS), HEIGHT - (DEAD_AREA + PULI_RADIUS + PULI_DIAMETER*(vpos-1) + 1))))
+    else: 
+        center = Vector2((ACTIVE_WIDTH - (PULI_DIAMETER*(lane-1) + PULI_RADIUS), HEIGHT - (DEAD_AREA + PULI_RADIUS + PULI_DIAMETER*(vpos-1) + 1)))
+    
+    return center
