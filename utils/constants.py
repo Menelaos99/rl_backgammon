@@ -1,5 +1,5 @@
 LANES = 24
-VPOS = 6
+VPOS = 15
 
 PULI_DIAMETER = 40
 

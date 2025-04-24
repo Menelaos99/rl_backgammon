@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pygame
 from pygame.math import Vector2
+from operator import itemgetter
 
 from .constants import *
 from .puli import Puli
@@ -152,7 +153,6 @@ class Board():
         assert isinstance(vpos, int)
         
         out_lane = 0
-        print('counts', self.counts)
         if self.counts[lane-1]==1 and puli.color != self.board_storage[lane][1].color:
             out_puli = self.board_storage[lane][vpos]
             if self.board_storage[lane][1].color == PULI_COLOR_P1:
@@ -168,26 +168,24 @@ class Board():
 
             self.board_storage[out_lane][out_vpos] = out_puli
         elif endgame:
-            print('enter end move')
             if puli.color == PULI_COLOR_P1:
                 vpos = self.counts[26]
                 self.board_storage[27][vpos+1] = self.board_storage[puli.lane][puli.vpos]
-                print('lane', puli.lane)
-                print('vpos', puli.vpos)
                 self.board_storage[puli.lane][puli.vpos]  = 0
             else:
                 vpos = self.counts[27]
                 self.board_storage[28][vpos+1] = self.board_storage[puli.lane][puli.vpos]
                 self.board_storage[puli.lane][puli.vpos] = 0
         else:
+            print('else in board move')
             self.board_storage[puli.lane][puli.vpos], self.board_storage[lane][vpos] = self.board_storage[lane][vpos], self.board_storage[puli.lane][puli.vpos]
-        print('board_storage', self.board_storage)
-        puli.move(lane=lane, vpos=vpos)
+        
+        self._get_counts()
+        print('counts', self.counts[lane-1])
+        puli.move(lane=lane, vpos=vpos, counts=self.counts[lane-1])
         if out_lane:
             out_puli.move(lane=out_lane, vpos=out_vpos)
 
-        self._get_counts()
-        print('counts', self.counts)
     
     def draw(
         self,
@@ -196,35 +194,19 @@ class Board():
         self._draw_board(win=win)
         # +5 lanes because we have +2 out, +2 endgame lanes, i.e. 25, 26 (starting  from 1)
         for lane in range(1, LANES+5):
-            if lane > 26:
-                counts = self.counts[lane-1]
-            else:
-                counts = 0
+            # if lane > 26:
+            #     counts = self.counts[lane-1]
+            # else:
+            #     counts = 0
             for vpos in range(1, VPOS+1):
                 puli = self.board_storage[lane][vpos]
                 if puli:
-                    puli.draw(win, counts)
+                    puli.draw(win, counts=vpos)
 
     def get_piece(self, lane, vpos):
         return self.board_storage[lane][vpos]
     
-    def _criterion(self, list, roll, puli):
-        print('roll', roll)
-        print('len list', len(list))
-        if len(self.dice)>2:
-            if len(list)>0:
-                print('if')
-                lane = list[-1][0]
-            else:
-                print('else')
-                lane = puli.lane
-        else:
-            if len(list)>2:
-                lane = list[-1][0]
-            else:
-                lane = puli.lane
-        
-        print('lane', lane)
+    def _criterion(self, lst, roll, puli, lane):
         if puli.color == PULI_COLOR_P2:
             lane = lane + roll
             count_pulia = 0
@@ -233,20 +215,21 @@ class Board():
                     # since empty positions have the value 0, if statement filters these values
                     if candidate:
                         count_pulia += 1
+                
                 # check if lane has puli or is empty 
                 if not isinstance(self.board_storage[lane][1], int): 
                     # same color as player 
                     if (self.board_storage[lane][1].color == PULI_COLOR_P2) and (lane <= LANES):    
-                        list.append((lane, count_pulia+1))
+                        lst.append((lane, count_pulia+1))
                     # different color from player
                     elif (self.board_storage[lane][1].color == PULI_COLOR_P1) and (lane <= LANES):
                         if count_pulia == 1:
-                            list.append((lane, count_pulia))
+                            lst.append((lane, count_pulia))
                 else:
                     # lane is empty, vpos=1 
-                    list.append((lane, 1))
-            # except:
-            #     list.append(pre_lane)
+                    lst.append((lane, 1))
+            lst = sorted(lst, key=itemgetter(0))
+            
 
         else:
             lane = lane - roll
@@ -257,56 +240,89 @@ class Board():
                         count_pulia += 1
                 if not isinstance(self.board_storage[lane][1], int): 
                     if self.board_storage[lane][1].color != PULI_COLOR_P2 and (lane > 0):
-                        list.append((lane, count_pulia+1))
+                        lst.append((lane, count_pulia+1))
                     elif (self.board_storage[lane][1].color == PULI_COLOR_P2) and (lane > 0):
 
                         if count_pulia == 1:
-                            list.append((lane, count_pulia))
+                            lst.append((lane, count_pulia))
                 else:
-                    list.append((lane, 1))
-            # except:
-            #     list.append(pre_lane)
-        print('lane1', lane)
-        print('list', list)
-
+                    lst.append((lane, 1))
+            lst = sorted(lst, key=itemgetter(0))
+            lst.reverse()
+        lst = list(set(lst))
+        return lst
+        
+        
     def get_valid_lanes(self, puli, dice: list, endgame=False):
-        self.dice = dice
         valid_lanes = []
-
-        print('len dice', len(dice))
+        if_break = False
 
         if len(dice) > 2 or len(dice)==1:
             val_range = 1
         else:
             val_range = 2
 
-        print('val range', val_range)
         for i in range(val_range):
-            print('i', i)
             if i > 0: 
                 dice.reverse()
-            # one_hop = []
             for j, roll in enumerate(dice):
-                self._criterion(valid_lanes, roll, puli)
-                # if j == 0:
-                #     print('entered crit')
-                #     self._criterion(one_hop, roll, lane, puli)
-                # else: 
-                #     for lane in one_hop:
-                #         #TODO: Check if tuple is necessary
-                #         valid_lanes.append(lane)
-                #         self._criterion(valid_lanes, roll, lane, puli)
-        # if len(dice)==1:
-        #     valid_lanes=one_hop
+                if len(dice)>2:
+                    if len(valid_lanes)>0:
+                        lane = valid_lanes[-1][0]
+                    else:
+                        lane = puli.lane
+                else:
+                    # if valid_lanes:
+                        # if puli.color == PULI_COLOR_P2:
+                        #     used_dice = valid_lanes[-1][0] - roll
+                        # else:
+                        #     used_dice = valid_lanes[-1][0] + roll
+                    if i == 1:
+                        if len(valid_lanes) == 2:
+                            for i, (lane, _) in enumerate(valid_lanes):
+                                if puli.color == PULI_COLOR_P2: 
+                                    used_dice_tmp = lane - roll
+                                else:
+                                    used_dice_tmp = lane + roll
+                            
+                                if used_dice_tmp == puli.lane:
+                                    tmp_valid_lanes = [tup[0] for tup in valid_lanes]
+                                    lane = int(np.setdiff1d(tmp_valid_lanes, tmp_valid_lanes[i]))
+                        elif 0 < len(valid_lanes) < 2:
+                            lane = valid_lanes[-1][0]
+                            if puli.color == PULI_COLOR_P2: 
+                                used_dice_tmp = lane - roll
+                            else:
+                                used_dice_tmp = lane + roll
+                            
+                            if dice[0]==dice[1]:
+                                roll = dice[0]
+                            elif used_dice_tmp == puli.lane:
+                                roll = int(np.setdiff1d(dice, [roll])[0])
+                            if_break = True
+                            # lane = valid_lanes[-1][0]
+                        else:
+                            lane = puli.lane
+                                    # used_dice = used_dice_tmp
 
+
+                        # if len(valid_lanes) < 2 and not (used_dice == puli.lane):
+                        #     lane = valid_lanes[-1][0]
+                        # elif len(valid_lanes) == 2:  
+                        #     lane = valid_lanes[0][0]
+                        # elif len(valid_lanes) == 3:
+                        #     lane = valid_lanes[1][0]
+                        # else:
+                        #     lane = puli.lane
+                    else:
+                        lane = puli.lane
+                valid_lanes = self._criterion(valid_lanes, roll, puli, lane)
+                if if_break:break
         if endgame and puli.color == PULI_COLOR_P1:
-            # vpos = self.counts[26] + 1
             valid_lanes.append((27, 6))
         elif endgame and puli.color == PULI_COLOR_P2:
-            # vpos = self.counts[27] + 1
             valid_lanes.append((28, 6))
         
-        valid_lanes = list(set(valid_lanes))
         return valid_lanes
 
 if __name__ == "__main__":

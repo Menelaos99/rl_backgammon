@@ -18,22 +18,27 @@ class Puli():
         # self.grid=self._create()
 
     def draw(self, win, counts):
-        self.center = calc_coor(lane=self.lane, vpos=self.vpos)
+        # if counts>6:
+        #     self.vpos = 6
+        self.center = calc_coor(lane=self.lane, vpos=self.vpos, counts=self.vpos)
         pygame.draw.circle(win, OUTLINE_COLOR, self.center, PULI_RADIUS)
         pygame.draw.circle(win, self.color, self.center, PULI_RADIUS-3)
         pygame.draw.circle(win, OUTLINE_COLOR, self.center, int(PULI_RADIUS/2))
         pygame.draw.circle(win, self.color, self.center, int(PULI_RADIUS/2)-3)
-        if self.lane > 26:
+        
+        if self.lane > 26 or (counts>6 and self.lane<=24):
             font = pygame.font.SysFont('arial', size=10)
             text = font.render(f'x{counts}', True, [0, 255, 0])
             win.blit(text, self.center)
 
-    def move(self, lane, vpos):
+    def move(self, lane, vpos, counts=0):
         self.lane=lane
         self.vpos=vpos
-        self.center  = calc_coor(self.lane, self.vpos)
+        self.center  = calc_coor(self.lane, self.vpos, counts=counts)
 
-def calc_coor(lane, vpos):
+def calc_coor(lane, vpos, counts=0):
+    if counts>=6:
+        vpos=6
     if lane == 27:
             center = Vector2((DEAD_AREA + 6*PULI_DIAMETER + PULI_RADIUS, ACTIVE_HEIGHT - (5*PULI_DIAMETER + PULI_RADIUS)))
     elif lane == 28:

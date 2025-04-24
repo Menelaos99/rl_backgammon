@@ -38,8 +38,6 @@ def get_row_col_from_mouse(pos):
         elif x < mid_left: 
             tmp_lane = int(int(x - DEAD_AREA)//PULI_DIAMETER)
             lane = lanes[tmp_lane]
-    print('lane', lane)
-    print('vpos', vpos)
     return lane, vpos
 
 def main():
