@@ -1,0 +1,4 @@
+# ── Python byte-code & cache directories ─────────────────────────────
+__pycache__/          # matches a folder of that name anywhere
+*.py[cod]             # .pyc, .pyo, .pyd
+*$py.class            # Jython-style compiled files
