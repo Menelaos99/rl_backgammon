@@ -39,14 +39,18 @@ class Game:
         print("Roll:", self.dice)
 
     def select(self, lane, vpos):
+        print('turn', self.turn)
         if self.selected:
             print('selected in select', self.selected.lane, self.selected.vpos)
             result = self._move(lane, vpos)
+            print('result', result)
             if not result:
                 self.selected = None
                 self.select(lane, vpos)
         
         puli = self.board.get_piece(lane, vpos)
+        print('cond', puli.color == self.turn)
+        print('cond1', puli.color, self.turn)
         if puli and puli.color == self.turn:
             self.selected = puli
             print('selected in select 1', self.selected.lane, self.selected.vpos)
@@ -82,7 +86,8 @@ class Game:
         
         if self.board.counts[lane-1] >= 6:
             vpos = self.board.counts[lane-1] + 1
-
+        
+        print('crit', (lane, vpos) in self.valid_lanes)
         if self.selected \
             and (piece == 0 or (piece != 0 and self.board.counts[lane-1]==1)) or (isinstance(piece, Puli) and self.board.counts[lane-1]>=6)\
             and (lane, vpos) in self.valid_lanes:
@@ -108,21 +113,25 @@ class Game:
                 pop_range = int(picked_roll/self.dice[0])
                 print('pop range', pop_range)
                 [self.dice.pop(0) for _ in range(pop_range)] 
+                print('dice', self.dice)
             elif picked_roll==sum(self.dice):
                 self.dice = []
             elif self.start_len<=2:
                 roll_idx = self.dice.index(picked_roll)
                 self.dice.pop(roll_idx)
             
-            if not self.dice or not self.valid_lanes:
+            print(self.dice)
+            print(self.valid_lanes)
+            if not self.dice :# or not self.valid_lanes, temporal solution, need to see what happens if player doesn't have moves
                 self.change_turn()
+                print('change turn', self.turn)
         else:
             return False
         print("board storage", self.board.board_storage)
+        print('\n')
         return True
     
     def draw_valid_moves(self):
-        print('valid lanes', self.valid_lanes)
         for lane, vpos in self.valid_lanes:
             center = calc_coor(lane, vpos, counts=self.board.counts[lane-1])
             pygame.draw.circle(self.win, GREEN, center, 5)

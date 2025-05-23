@@ -181,7 +181,7 @@ class Board():
             self.board_storage[puli.lane][puli.vpos], self.board_storage[lane][vpos] = self.board_storage[lane][vpos], self.board_storage[puli.lane][puli.vpos]
         
         self._get_counts()
-        print('counts', self.counts[lane-1])
+        # print('counts', self.counts[lane-1])
         puli.move(lane=lane, vpos=vpos, counts=self.counts[lane-1])
         if out_lane:
             out_puli.move(lane=out_lane, vpos=out_vpos)
@@ -210,7 +210,6 @@ class Board():
         """
         Handles in which lane and vpos the puli should be placed 
         """
-        print(lane)
         if puli.color == PULI_COLOR_P2:
             lane = lane + roll
             count_pulia = 0
@@ -268,9 +267,7 @@ class Board():
             if i > 0: 
                 dice.reverse()
             for j, roll in enumerate(dice):
-                print(f'{j} roll {roll}')
                 if len(dice)>2:
-                    print(valid_lanes)
                     if len(valid_lanes)>0:
                         lane = valid_lanes[-1][0]
                     else:
