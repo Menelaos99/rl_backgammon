@@ -4,7 +4,7 @@
 
 A lightweight, pure‑Python playground for experimenting with reinforcement‑learning (RL) techniques on the classic board game **Backgammon**.
 
-![Screenshot](utils/Capture.PNG)
+![Screenshot](images/Capture.PNG)
 
 Current capabilities
 
