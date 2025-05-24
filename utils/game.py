@@ -19,7 +19,7 @@ class Game:
     def _init_game(self):
         self.selected = None
         self.board = Board()
-        self.turn = PULI_COLOR_P2
+        self.turn = PULI_COLOR_P1
         self.valid_lanes = {}
         self.change = False
         self._roll()
@@ -30,8 +30,6 @@ class Game:
     def _roll(self):
         d1 = np.random.randint(1,7, dtype=int)
         d2 = np.random.randint(1,7, dtype=int)
-        d1=1
-        d2=1
         self.dice = [d1, d2]
         if d1 == d2:
             self.dice.extend(self.dice)
@@ -39,27 +37,21 @@ class Game:
         print("Roll:", self.dice)
 
     def select(self, lane, vpos):
-        print('turn', self.turn)
         if self.selected:
-            print('selected in select', self.selected.lane, self.selected.vpos)
             result = self._move(lane, vpos)
-            print('result', result)
             if not result:
                 self.selected = None
                 self.select(lane, vpos)
         
         puli = self.board.get_piece(lane, vpos)
-        print('cond', puli.color == self.turn)
-        print('cond1', puli.color, self.turn)
         if puli and puli.color == self.turn:
             self.selected = puli
-            print('selected in select 1', self.selected.lane, self.selected.vpos)
             if self.p1_entered_endgame or self.p2_entered_endgame:
                 self.valid_lanes = self.board.get_valid_lanes(puli=puli, dice=self.dice, endgame=True)
             else:
                 self.valid_lanes = self.board.get_valid_lanes(puli=puli, dice=self.dice)
             return True
-            
+
         return False
 
     def bring_back_in(self, puli, lane):
@@ -69,12 +61,10 @@ class Game:
         self.valid_lanes = self.board.get_valid_lanes(puli=puli_tmp, dice=self.dice)
 
     def change_turn(self):
+        self.selected = None       
         self._roll()
-        self.valid_lanes = {}
-        if self.turn == PULI_COLOR_P1:
-            self.turn = PULI_COLOR_P2
-        else:
-            self.turn = PULI_COLOR_P1
+        self.valid_lanes.clear()      
+        self.turn = (PULI_COLOR_P2 if self.turn == PULI_COLOR_P1 else PULI_COLOR_P1)
     
     def _move(self, lane, vpos):
         piece = self.board.get_piece(lane, vpos)
@@ -87,17 +77,18 @@ class Game:
         if self.board.counts[lane-1] >= 6:
             vpos = self.board.counts[lane-1] + 1
         
-        print('crit', (lane, vpos) in self.valid_lanes)
-        if self.selected \
-            and (piece == 0 or (piece != 0 and self.board.counts[lane-1]==1)) or (isinstance(piece, Puli) and self.board.counts[lane-1]>=6)\
-            and (lane, vpos) in self.valid_lanes:
+        if ( self.selected
+            and (
+                (piece == 0 or (piece != 0 and self.board.counts[lane-1] == 1))
+                or (isinstance(piece, Puli) and self.board.counts[lane-1] >= 6)
+            )
+            and (lane, vpos) in self.valid_lanes
+        ):
             
             if self.selected.color == PULI_COLOR_P2:
                 if self.selected.lane == 26:
                     picked_roll = lane
                 else:
-                    print('lane', lane)
-                    print('select', self.selected.lane)
                     picked_roll = lane - self.selected.lane
             elif self.selected.color == PULI_COLOR_P1:
                 if self.selected.lane == 0:
@@ -108,27 +99,19 @@ class Game:
             self.board.move(self.selected, lane, vpos, endgame=endgame)
             
             if self.start_len>2:
-                print('picked roll', picked_roll)
-                print('dice0', self.dice[0])
                 pop_range = int(picked_roll/self.dice[0])
-                print('pop range', pop_range)
                 [self.dice.pop(0) for _ in range(pop_range)] 
-                print('dice', self.dice)
             elif picked_roll==sum(self.dice):
                 self.dice = []
             elif self.start_len<=2:
                 roll_idx = self.dice.index(picked_roll)
                 self.dice.pop(roll_idx)
-            
-            print(self.dice)
-            print(self.valid_lanes)
+
             if not self.dice :# or not self.valid_lanes, temporal solution, need to see what happens if player doesn't have moves
                 self.change_turn()
-                print('change turn', self.turn)
         else:
             return False
-        print("board storage", self.board.board_storage)
-        print('\n')
+
         return True
     
     def draw_valid_moves(self):

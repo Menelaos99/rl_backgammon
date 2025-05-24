@@ -8,11 +8,8 @@ from operator import itemgetter
 
 from .constants import *
 from .puli import Puli
-# from utils.isosceles import isosceles
-# from utils.test import test
 
 
-#TODO: add identifies sta pulia (is it a good idea?)
 class Diamond():
     def __init__(self):
         pass
@@ -177,11 +174,9 @@ class Board():
                 self.board_storage[28][vpos+1] = self.board_storage[puli.lane][puli.vpos]
                 self.board_storage[puli.lane][puli.vpos] = 0
         else:
-            print('else in board move')
             self.board_storage[puli.lane][puli.vpos], self.board_storage[lane][vpos] = self.board_storage[lane][vpos], self.board_storage[puli.lane][puli.vpos]
         
         self._get_counts()
-        # print('counts', self.counts[lane-1])
         puli.move(lane=lane, vpos=vpos, counts=self.counts[lane-1])
         if out_lane:
             out_puli.move(lane=out_lane, vpos=out_vpos)
@@ -194,13 +189,10 @@ class Board():
         self._draw_board(win=win)
         # +5 lanes because we have +2 puli out, +2 endgame lanes (+2->one for each player), i.e. 25, 26 (starting  from 1)
         for lane in range(1, LANES+5):
-            # if lane > 26:
-            #     counts = self.counts[lane-1]
-            # else:
-            #     counts = 0
             for vpos in range(1, VPOS+1):
                 puli = self.board_storage[lane][vpos]
                 if puli:
+
                     puli.draw(win, counts=vpos)
 
     def get_piece(self, lane, vpos):
@@ -273,11 +265,6 @@ class Board():
                     else:
                         lane = puli.lane
                 else:
-                    # if valid_lanes:
-                        # if puli.color == PULI_COLOR_P2:
-                        #     used_dice = valid_lanes[-1][0] - roll
-                        # else:
-                        #     used_dice = valid_lanes[-1][0] + roll
                     if i == 1:
                         if len(valid_lanes) == 2:
                             for i, (lane, _) in enumerate(valid_lanes):
@@ -304,17 +291,6 @@ class Board():
                             # lane = valid_lanes[-1][0]
                         else:
                             lane = puli.lane
-                                    # used_dice = used_dice_tmp
-
-
-                        # if len(valid_lanes) < 2 and not (used_dice == puli.lane):
-                        #     lane = valid_lanes[-1][0]
-                        # elif len(valid_lanes) == 2:  
-                        #     lane = valid_lanes[0][0]
-                        # elif len(valid_lanes) == 3:
-                        #     lane = valid_lanes[1][0]
-                        # else:
-                        #     lane = puli.lane
                     else:
                         lane = puli.lane
                 valid_lanes = self._criterion(valid_lanes, roll, puli, lane)

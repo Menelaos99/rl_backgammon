@@ -14,12 +14,8 @@ class Puli():
         self.lane = lane
         self.vpos = vpos           
         self.center = (0, 0)
-        # self.draw(win)
-        # self.grid=self._create()
 
     def draw(self, win, counts):
-        # if counts>6:
-        #     self.vpos = 6
         self.center = calc_coor(lane=self.lane, vpos=self.vpos, counts=self.vpos)
         # Draw puli
         pygame.draw.circle(win, OUTLINE_COLOR, self.center, PULI_RADIUS)

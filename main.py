@@ -43,7 +43,6 @@ def get_row_col_from_mouse(pos):
 def main():
     pygame.init()
     os.environ["SDL_VIDEO_CENTERED"] = '1'
-    info = pygame.display.Info()
     
     screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
     
